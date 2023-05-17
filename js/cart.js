@@ -70,14 +70,17 @@ async function constructionDOM() {
                 myLocalStorage.splice(i, 1);
                 const nouveauPanier = JSON.stringify(myLocalStorage);
                 window.localStorage.setItem("panier", nouveauPanier);
-                console.log(myLocalStorage.length);
                 if(myLocalStorage.length === 0) {
                     localStorage.removeItem("panier");
                 }
                 listeArticles.innerHTML = "";
-                totalCanapesPanier();
-                prixTotal();
-                constructionDOM();
+                // On attend que le DOM soit reconstruit pour réafficher le total ou panier vide
+                async function attenteDOM() {
+                    await constructionDOM();
+                    totalCanapesPanier();
+                    prixTotal();
+                }
+                attenteDOM();
             })
         }
     });
@@ -98,7 +101,6 @@ function totalCanapesPanier() {
 function prixTotal() {
     const getPrix = document.getElementsByClassName("prix_article");
     let tableauPrix = [];
-
     if (getPrix.length !== 0) {
         for (let i = 0; i < getPrix.length; i++) {
             let valeur = getPrix[i].outerText;
@@ -108,7 +110,7 @@ function prixTotal() {
         let sommePrix = tableauPrix.reduce((a, b) => a + b, 0);
         const prixTotalHTML = document.getElementById("totalPrice");
         prixTotalHTML.innerHTML = sommePrix;
-    } else {
+    } else if(getPrix.length === 0) {
         const prixTotalHTML = document.getElementById("totalPrice");
         prixTotalHTML.innerHTML = 0;
         panierVide();
