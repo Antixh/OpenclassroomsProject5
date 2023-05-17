@@ -134,15 +134,10 @@ function panierVide() {
     Prix total du panier
     Si le panier est vide on met un lien vers la page d'accueil
 */
-function pagePanier() {
-    constructionDOM()
-    .then(() => {
-        totalCanapesPanier();
-        prixTotal();
-    })
-    .catch(error => {
-        panierVide();
-    });
+async function pagePanier() {
+    await constructionDOM();
+    totalCanapesPanier();
+    prixTotal();
 }
 
 pagePanier();
