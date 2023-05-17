@@ -50,29 +50,28 @@ ajoutPanier.addEventListener("click", function () {
         const article = {
             id: produitID,
             couleur: couleurCanape,
-            quantite: quantiteCanape
+            quantite: Number(quantiteCanape)
         };
+
         // Vérification du panier en fonction de l'existant
-        const testPanierRempli = window.localStorage.getItem("panier");
-        if (testPanierRempli === null) {
+        const myLocalStorage = window.localStorage.getItem("panier");
+        if (myLocalStorage === null) {
             panierCommande.push(article);
             const articleAjoute = JSON.stringify(panierCommande);
             window.localStorage.setItem("panier", articleAjoute);
         } else {
-            const panierComplet = JSON.parse(testPanierRempli);
-            // Vérifier si il n'y a pas déjà une référence à cet article
-            console.log(panierComplet);
-            const idArticle = article.id;
-            const couleurArticle = article.couleur;
-            const quantiteArticle = article.quantite;
-            // Filtrer le panierComplet pour récupérer les doublons id et couleur
-            const filtrePanier = panierComplet.filter(obj => obj.id === idArticle && obj.couleur === couleurArticle);
-            console.log(filtrePanier);
-            
-            panierComplet.push(article);
-            const nouveauPanier = JSON.stringify(panierComplet);
+            const listeCanapes = JSON.parse(myLocalStorage);
+            // Vérifier si il n'y a pas déjà une référence à cet article et push en conséquence
+            const filtrePanier = listeCanapes.findIndex(obj => obj.id === article.id && obj.couleur === article.couleur);
+            if(filtrePanier === -1){
+                listeCanapes.push(article);
+            } else {
+                listeCanapes[filtrePanier].quantite = listeCanapes[filtrePanier].quantite + article.quantite;
+            }
+            const nouveauPanier = JSON.stringify(listeCanapes);
             window.localStorage.setItem("panier", nouveauPanier);
         }
+
         // Ajout du texte de confirmation à la fin du formulaire
         const sectionConfirmation = document.querySelector(".item__content");
         const texteConfirmation = document.createElement("p");
