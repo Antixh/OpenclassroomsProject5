@@ -2,6 +2,7 @@
 const myLocalStorage = JSON.parse(window.localStorage.getItem("panier"));
 console.log(myLocalStorage);
 
+// Gestion des promesses
 const gestionPromesse = myLocalStorage.map(reference => {
     return new Promise((resolve, reject) => {
         // Appel à l'API
@@ -69,6 +70,7 @@ const gestionPromesse = myLocalStorage.map(reference => {
     })
 })
 
+// On attend que toutes les promesses soient résolues pour afficher le prix total
 Promise.all(gestionPromesse)
     .then(() => {
         prixTotal();
