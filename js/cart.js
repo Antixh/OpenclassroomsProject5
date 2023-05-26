@@ -168,8 +168,8 @@ boutonSubmit.addEventListener("click", (event) => {
     
     // Regex pour les différents champs
     const regexField =  /^[A-Za-z]+[a-zA-Zéèëïü-]+[a-zA-Zéèëïü]$/m; 
-    const regexaddresse = /^[0-9A-Za-z]+[A-Za-z -']+[a-zéèëêîçô]$/m;
-    const regexEmail = /^([a-zA-Z0-9_\.\+-]+)@([\da-z\.-]+)\.([a-z\.]{2,3})$/m;
+    const regexaddresse = /^[\w]+[A-Za-z -']+[a-zéèëêîçô]$/m;
+    const regexEmail = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/m;
     
     // On récupère les champs pour les erreurs de saisie après regex
     const firstNameErrorMsg = document.getElementById("firstNameErrorMsg");
