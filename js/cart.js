@@ -19,103 +19,112 @@ async function constructionDOM() {
     .then(listeCanapes => {
         const listeArticles = document.getElementById("cart__items");
         // On crée une boucle pour parcourir le localStorage et afficher chacun des items
-        for (let i = 0; i < myLocalStorage.length; i++) {
-            const refIndex = listeCanapes.findIndex(item => item._id === myLocalStorage[i].id);
-            const refCanape = listeCanapes[refIndex];
-            const canapeStorage = myLocalStorage[i];
-            let monCanapPrix = refCanape.price * canapeStorage.quantite;
-            listeArticles.insertAdjacentHTML('afterbegin', `
-                <article class="cart__item" data-id="${canapeStorage.id}" data-color="${canapeStorage.couleur}">
-                    <div class="cart__item__img">
-                        <img src="${refCanape.imageUrl}" alt="Photographie d'un canapé">
-                    </div>
-                    <div class="cart__item__content">
-                        <div class="cart__item__content__description">
-                            <h2>${refCanape.name}</h2>
-                            <p>${canapeStorage.couleur}</p>
-                            <p class="prix_article">${monCanapPrix}€</p>
+        if (myLocalStorage === null){
+            panierVide();
+        } else {
+            for (let i = 0; i < myLocalStorage.length; i++) {
+                const refIndex = listeCanapes.findIndex(item => item._id === myLocalStorage[i].id);
+                const refCanape = listeCanapes[refIndex];
+                const canapeStorage = myLocalStorage[i];
+                let monCanapPrix = refCanape.price * canapeStorage.quantite;
+                listeArticles.insertAdjacentHTML('afterbegin', `
+                    <article class="cart__item" data-id="${canapeStorage.id}" data-color="${canapeStorage.couleur}">
+                        <div class="cart__item__img">
+                            <img src="${refCanape.imageUrl}" alt="Photographie d'un canapé">
                         </div>
-                        <div class="cart__item__content__settings">
-                            <div class="cart__item__content__settings__quantity">
-                                <p>Qté : </p>
-                                <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${canapeStorage.quantite}">
+                        <div class="cart__item__content">
+                            <div class="cart__item__content__description">
+                                <h2>${refCanape.name}</h2>
+                                <p>${canapeStorage.couleur}</p>
+                                <p class="prix_article">${monCanapPrix}€</p>
                             </div>
-                            <div class="cart__item__content__settings__delete">
-                                <p class="deleteItem">Supprimer</p>
+                            <div class="cart__item__content__settings">
+                                <div class="cart__item__content__settings__quantity">
+                                    <p>Qté : </p>
+                                    <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${canapeStorage.quantite}">
+                                </div>
+                                <div class="cart__item__content__settings__delete">
+                                    <p class="deleteItem">Supprimer</p>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </article>
-            `);
-
-            // Catch de la modification de quantité
-            const modifQuantite = document.querySelector(`article[data-id="${canapeStorage.id}"] .itemQuantity`);
-            modifQuantite.addEventListener("change", () => {
-                const nouvelleQuantite = Number(modifQuantite.value);
-                const filtreCanape = myLocalStorage.findIndex(obj => canapeStorage.id === obj.id && canapeStorage.couleur === obj.couleur);
-                myLocalStorage[filtreCanape].quantite = nouvelleQuantite;
-                monCanapPrix = nouvelleQuantite * refCanape.price;
-                const nouveauPanier = JSON.stringify(myLocalStorage);
-                window.localStorage.setItem("panier", nouveauPanier);
-                const prixArticle = document.querySelector(`article[data-id="${canapeStorage.id}"]  .prix_article`);
-                prixArticle.innerHTML = `${monCanapPrix}€`;
-
-                totalCanapesPanier();
-                prixTotal();
-            });
-
-            // Catch de la suppression d'un canapé
-            const supprCanape = document.querySelector(`article[data-id="${canapeStorage.id}"] .deleteItem`);
-            supprCanape.addEventListener("click", () => {
-                myLocalStorage.splice(i, 1);
-                const nouveauPanier = JSON.stringify(myLocalStorage);
-                window.localStorage.setItem("panier", nouveauPanier);
-                if(myLocalStorage.length === 0) {
-                    localStorage.removeItem("panier");
-                }
-                listeArticles.innerHTML = "";
-                // On attend que le DOM soit reconstruit pour réafficher le total ou panier vide
-                async function attenteDOM() {
-                    await constructionDOM();
+                    </article>
+                `);
+    
+                // Catch de la modification de quantité
+                const modifQuantite = document.querySelector(`article[data-id="${canapeStorage.id}"] .itemQuantity`);
+                modifQuantite.addEventListener("change", () => {
+                    const nouvelleQuantite = Number(modifQuantite.value);
+                    const filtreCanape = myLocalStorage.findIndex(obj => canapeStorage.id === obj.id && canapeStorage.couleur === obj.couleur);
+                    myLocalStorage[filtreCanape].quantite = nouvelleQuantite;
+                    monCanapPrix = nouvelleQuantite * refCanape.price;
+                    const nouveauPanier = JSON.stringify(myLocalStorage);
+                    window.localStorage.setItem("panier", nouveauPanier);
+                    const prixArticle = document.querySelector(`article[data-id="${canapeStorage.id}"]  .prix_article`);
+                    prixArticle.innerHTML = `${monCanapPrix}€`;
+    
                     totalCanapesPanier();
                     prixTotal();
-                }
-                attenteDOM();
-            })
+                });
+    
+                // Catch de la suppression d'un canapé
+                const supprCanape = document.querySelector(`article[data-id="${canapeStorage.id}"] .deleteItem`);
+                supprCanape.addEventListener("click", () => {
+                    myLocalStorage.splice(i, 1);
+                    const nouveauPanier = JSON.stringify(myLocalStorage);
+                    window.localStorage.setItem("panier", nouveauPanier);
+                    if(myLocalStorage.length === 0) {
+                        localStorage.removeItem("panier");
+                    }
+                    listeArticles.innerHTML = "";
+                    // On attend que le DOM soit reconstruit pour réafficher le total ou panier vide
+                    async function attenteDOM() {
+                        await constructionDOM();
+                        totalCanapesPanier();
+                        prixTotal();
+                    }
+                    attenteDOM();
+                })
+            }
         }
     });
 }
 
 // Affichage total canapés
 function totalCanapesPanier() {
-    function recupQuantite(myLocalStorage) {
-        return myLocalStorage.quantite;
+    if (myLocalStorage !== null){
+        function recupQuantite(myLocalStorage) {
+            return myLocalStorage.quantite;
+        }
+        const recupValeurQuantite = myLocalStorage.map(recupQuantite);
+        const totalCanapes = recupValeurQuantite.reduce((a, b) => a + b, 0);
+        const totalQuantite = document.getElementById("totalQuantity");
+        totalQuantite.innerHTML = totalCanapes;
     }
-    const recupValeurQuantite = myLocalStorage.map(recupQuantite);
-    const totalCanapes = recupValeurQuantite.reduce((a, b) => a + b, 0);
-    const totalQuantite = document.getElementById("totalQuantity");
-    totalQuantite.innerHTML = totalCanapes;
 }
 
 // Affichage prix total
 function prixTotal() {
-    const getPrix = document.getElementsByClassName("prix_article");
-    let tableauPrix = [];
-    if (getPrix.length !== 0) {
-        for (let i = 0; i < getPrix.length; i++) {
-            let valeur = getPrix[i].outerText;
-            let recuperationPrix = Number(valeur.substring(0, valeur.length - 1));
-            tableauPrix.push(recuperationPrix);
+    if (myLocalStorage !== null) {
+        const getPrix = document.getElementsByClassName("prix_article");
+        let tableauPrix = [];
+        if (getPrix.length !== 0) {
+            for (let i = 0; i < getPrix.length; i++) {
+                let valeur = getPrix[i].outerText;
+                let recuperationPrix = Number(valeur.substring(0, valeur.length - 1));
+                tableauPrix.push(recuperationPrix);
+            }
+            let sommePrix = tableauPrix.reduce((a, b) => a + b, 0);
+            const prixTotalHTML = document.getElementById("totalPrice");
+            prixTotalHTML.innerHTML = sommePrix;
+        } else if(getPrix.length === 0) {
+            const prixTotalHTML = document.getElementById("totalPrice");
+            prixTotalHTML.innerHTML = 0;
+            panierVide();
         }
-        let sommePrix = tableauPrix.reduce((a, b) => a + b, 0);
-        const prixTotalHTML = document.getElementById("totalPrice");
-        prixTotalHTML.innerHTML = sommePrix;
-    } else if(getPrix.length === 0) {
-        const prixTotalHTML = document.getElementById("totalPrice");
-        prixTotalHTML.innerHTML = 0;
-        panierVide();
     }
-}
+} 
+
 
 // Gestion du panier vide
 function panierVide() {
@@ -142,7 +151,6 @@ async function pagePanier() {
 
 pagePanier();
 
-
 /*
     Gestion du formulaire de confirmation de commande
 */
@@ -159,77 +167,42 @@ boutonSubmit.addEventListener("click", (event) => {
     const email = document.getElementById("email").value;
     
     // Regex pour les différents champs
-    const regexPrenom =  /^[A-Za-z]+[a-zA-Zéèëïü-]+[a-zA-Zéèëïü]$/m;
-    const regexNom = /^[A-Za-z]+[a-zA-Zéèëïü-]+[a-zA-Zéèëïü]$/m;
-    const regexaddresse = /^[0-9A-Za-z]+[A-Za-z -']+[a-zéèëïü]$/m;
-    const regexVille = /^[A-Za-z][a-zA-Z' éèëêîçô-]+[a-z]$/m;
+    const regexField =  /^[A-Za-z]+[a-zA-Zéèëïü-]+[a-zA-Zéèëïü]$/m; 
+    const regexaddresse = /^[0-9A-Za-z]+[A-Za-z -']+[a-zéèëêîçô]$/m;
     const regexEmail = /^([a-zA-Z0-9_\.\+-]+)@([\da-z\.-]+)\.([a-z\.]{2,3})$/m;
-
-    // On crée les variables pour récupérer les valeurs après test des regex
-    let firstNameChecked;
-    let lastNameChecked;
-    let addressChecked;
-    let cityChecked;
-    let emailChecked;
     
-    // On récupère les champs au cas où il y a une erreur de donnée lors des test avec regex
+    // On récupère les champs pour les erreurs de saisie après regex
     const firstNameErrorMsg = document.getElementById("firstNameErrorMsg");
     const lastNameErrorMsg = document.getElementById("lastNameErrorMsg");
     const addressErrorMsg = document.getElementById("addressErrorMsg");
     const cityErrorMsg = document.getElementById("cityErrorMsg");
     const emailErrorMsg = document.getElementById("emailErrorMsg");
 
+    const checkField = (regex, field, error) =>{
+        if (regex.test(field)) {
+            error.innerHTML = "";
+        } else {
+            error.innerHTML = "Données non conforme";
+        }
+    }
+
     // Test des valeurs avec regex, on met un message d'erreur si le test n'est pas concluant
-    if (regexPrenom.test(firstName) === true) {
-        firstNameErrorMsg.innerHTML = "";
-        firstNameChecked = firstName;
-    } else {
-        firstNameErrorMsg.innerHTML = "Prénom non conforme";
-    }
-
-    if (regexNom.test(lastName) === true) {
-        lastNameErrorMsg.innerHTML = "";
-        lastNameChecked = lastName;
-    } else {
-        lastNameErrorMsg.innerHTML = "Nom non conforme";
-    }
-
-    if (regexaddresse.test(address) === true) {
-        addressErrorMsg.innerHTML = "";
-        addressChecked = address;
-    } else {
-        addressErrorMsg.innerHTML = "addresse non conforme";
-    }
-
-    if (regexVille.test(city) === true) {
-        cityErrorMsg.innerHTML = "";
-        cityChecked = city;
-    } else {
-        cityErrorMsg.innerHTML = "Ville non conforme";
-    }
-
-    if (regexEmail.test(email) === true) {
-        emailErrorMsg.innerHTML = "";
-        emailChecked = email;
-    } else {
-        emailErrorMsg.innerHTML = "Mail non conforme";
-    }
+    checkField(regexField, firstName, firstNameErrorMsg);
+    checkField(regexField, lastName, lastNameErrorMsg);
+    checkField(regexaddresse, address, addressErrorMsg);
+    checkField(regexField, city, cityErrorMsg);
+    checkField(regexEmail, email, emailErrorMsg);
     
     let contact = {
-        firstName: firstNameChecked,
-        lastName: lastNameChecked,
-        address: addressChecked,
-        city: cityChecked,
-        email: emailChecked
+        firstName,
+        lastName,
+        address,
+        city,
+        email,
     };
     
     // Si l'objet contact est rempli alors on peut l'utiliser
-    if (typeof contact.firstName !== 'undefined' && 
-        typeof contact.lastName !== 'undefined' && 
-        typeof contact.address !== 'undefined' && 
-        typeof contact.city !== 'undefined' && 
-        typeof contact.email !== 'undefined') {
-        
+    if ( firstName && lastName  && address  && city  && email && myLocalStorage !== null) {
         envoiServeur();
     }
 
