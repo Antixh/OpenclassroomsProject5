@@ -141,3 +141,122 @@ async function pagePanier() {
 }
 
 pagePanier();
+
+
+/*
+    Gestion du formulaire de confirmation de commande
+*/
+
+// écouteur sur le bouton de commande
+const boutonSubmit = document.getElementById("order");
+boutonSubmit.addEventListener("click", (event) => {
+    event.preventDefault();
+    // On récupère toutes les valeurs du formulaire
+    const firstName = document.getElementById("firstName").value;
+    const lastName = document.getElementById("lastName").value;
+    const address = document.getElementById("address").value;
+    const city = document.getElementById("city").value;
+    const email = document.getElementById("email").value;
+    
+    // Regex pour les différents champs
+    const regexPrenom =  /^[A-Za-z]+[a-zA-Zéèëïü-]+[a-zA-Zéèëïü]$/m;
+    const regexNom = /^[A-Za-z]+[a-zA-Zéèëïü-]+[a-zA-Zéèëïü]$/m;
+    const regexaddresse = /^[0-9A-Za-z]+[A-Za-z -']+[a-zéèëïü]$/m;
+    const regexVille = /^[A-Za-z][a-zA-Z' éèëêîçô-]+[a-z]$/m;
+    const regexEmail = /^([a-zA-Z0-9_\.\+-]+)@([\da-z\.-]+)\.([a-z\.]{2,3})$/m;
+
+    // On crée les variables pour récupérer les valeurs après test des regex
+    let firstNameChecked;
+    let lastNameChecked;
+    let addressChecked;
+    let cityChecked;
+    let emailChecked;
+    
+    // On récupère les champs au cas où il y a une erreur de donnée lors des test avec regex
+    const firstNameErrorMsg = document.getElementById("firstNameErrorMsg");
+    const lastNameErrorMsg = document.getElementById("lastNameErrorMsg");
+    const addressErrorMsg = document.getElementById("addressErrorMsg");
+    const cityErrorMsg = document.getElementById("cityErrorMsg");
+    const emailErrorMsg = document.getElementById("emailErrorMsg");
+
+    // Test des valeurs avec regex, on met un message d'erreur si le test n'est pas concluant
+    if (regexPrenom.test(firstName) === true) {
+        firstNameErrorMsg.innerHTML = "";
+        firstNameChecked = firstName;
+    } else {
+        firstNameErrorMsg.innerHTML = "Prénom non conforme";
+    }
+
+    if (regexNom.test(lastName) === true) {
+        lastNameErrorMsg.innerHTML = "";
+        lastNameChecked = lastName;
+    } else {
+        lastNameErrorMsg.innerHTML = "Nom non conforme";
+    }
+
+    if (regexaddresse.test(address) === true) {
+        addressErrorMsg.innerHTML = "";
+        addressChecked = address;
+    } else {
+        addressErrorMsg.innerHTML = "addresse non conforme";
+    }
+
+    if (regexVille.test(city) === true) {
+        cityErrorMsg.innerHTML = "";
+        cityChecked = city;
+    } else {
+        cityErrorMsg.innerHTML = "Ville non conforme";
+    }
+
+    if (regexEmail.test(email) === true) {
+        emailErrorMsg.innerHTML = "";
+        emailChecked = email;
+    } else {
+        emailErrorMsg.innerHTML = "Mail non conforme";
+    }
+    
+    let contact = {
+        firstName: firstNameChecked,
+        lastName: lastNameChecked,
+        address: addressChecked,
+        city: cityChecked,
+        email: emailChecked
+    };
+    
+    // Si l'objet contact est rempli alors on peut l'utiliser
+    if (typeof contact.firstName !== 'undefined' && 
+        typeof contact.lastName !== 'undefined' && 
+        typeof contact.address !== 'undefined' && 
+        typeof contact.city !== 'undefined' && 
+        typeof contact.email !== 'undefined') {
+        
+        envoiServeur();
+    }
+
+    // Fonction d'envoi de la requête POST à l'API
+    function envoiServeur() {
+        let products = [];
+        for (let i = 0; i < myLocalStorage.length; i++) {
+            const productId = myLocalStorage[i].id;
+            products.push(productId);
+        }
+
+        const requetePost = fetch("http://localhost:3000/api/products/order", {
+            method: "POST",
+            body: JSON.stringify({contact, products}),
+            headers: {
+                "Content-Type": "application/json",
+            },
+        })
+
+        requetePost.then(async(reponse) => {
+            try {
+                const reponseServeur = await reponse.json();
+                const orderId = reponseServeur.orderId;
+                document.location.href = `confirmation.html?id=${orderId}`;
+            } catch(e) {
+                console.log(e);
+            }
+        })
+    }
+})
