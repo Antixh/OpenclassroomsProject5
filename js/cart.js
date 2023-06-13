@@ -90,6 +90,40 @@ async function constructionDOM() {
     });
 }
 
+// Gestion du message d'erreur du formulaire avec les regex
+const checkField = (regex, field, error) => {
+    if (regex.test(field)) {
+        error.innerHTML = "";
+    } else {
+        error.innerHTML = "Données non conforme";
+    }
+}
+
+// Fonction d'envoi de la requête POST à l'API
+function order(contact) {
+    let products = [];
+    for (let i = 0; i < myLocalStorage.length; i++) {
+        const productId = myLocalStorage[i].id;
+        products.push(productId);
+    }
+
+    fetch("http://localhost:3000/api/products/order", {
+        method: "POST",
+        body: JSON.stringify({contact, products}),
+        headers: {
+            "Content-Type": "application/json",
+        },
+    }).then(async(response) => {
+        try {
+            const reponseServeur = await response.json();
+            const orderId = reponseServeur.orderId;
+            document.location.href = `confirmation.html?id=${orderId}`;
+        } catch(e) {
+            console.log(e);
+        }
+    })
+}
+
 // Affichage total canapés
 function totalCanapesPanier() {
     if (myLocalStorage !== null){
@@ -124,7 +158,6 @@ function prixTotal() {
         }
     }
 } 
-
 
 // Gestion du panier vide
 function panierVide() {
@@ -178,14 +211,6 @@ boutonSubmit.addEventListener("click", (event) => {
     const cityErrorMsg = document.getElementById("cityErrorMsg");
     const emailErrorMsg = document.getElementById("emailErrorMsg");
 
-    const checkField = (regex, field, error) =>{
-        if (regex.test(field)) {
-            error.innerHTML = "";
-        } else {
-            error.innerHTML = "Données non conforme";
-        }
-    }
-
     // Test des valeurs avec regex, on met un message d'erreur si le test n'est pas concluant
     checkField(regexField, firstName, firstNameErrorMsg);
     checkField(regexField, lastName, lastNameErrorMsg);
@@ -193,7 +218,8 @@ boutonSubmit.addEventListener("click", (event) => {
     checkField(regexField, city, cityErrorMsg);
     checkField(regexEmail, email, emailErrorMsg);
     
-    let contact = {
+    // Création de l'objet contact
+    let userContact = {
         firstName,
         lastName,
         address,
@@ -202,34 +228,6 @@ boutonSubmit.addEventListener("click", (event) => {
     };
     
     // Si l'objet contact est rempli alors on peut l'utiliser
-    if ( firstName && lastName  && address  && city  && email && myLocalStorage !== null) {
-        envoiServeur();
-    }
-
-    // Fonction d'envoi de la requête POST à l'API
-    function envoiServeur() {
-        let products = [];
-        for (let i = 0; i < myLocalStorage.length; i++) {
-            const productId = myLocalStorage[i].id;
-            products.push(productId);
-        }
-
-        const requetePost = fetch("http://localhost:3000/api/products/order", {
-            method: "POST",
-            body: JSON.stringify({contact, products}),
-            headers: {
-                "Content-Type": "application/json",
-            },
-        })
-
-        requetePost.then(async(reponse) => {
-            try {
-                const reponseServeur = await reponse.json();
-                const orderId = reponseServeur.orderId;
-                document.location.href = `confirmation.html?id=${orderId}`;
-            } catch(e) {
-                console.log(e);
-            }
-        })
-    }
+    (firstName && lastName  && address  && city  && email && myLocalStorage) ? order(userContact): alert("Il vous faut choisir au moins un produit");
+    
 })
