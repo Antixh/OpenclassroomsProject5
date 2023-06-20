@@ -30,7 +30,7 @@ canapeAPI().then( canape => {
     for(const color of canape.colors) {
         couleurCanape.innerHTML += `<option value="${ color }">${ color }</option>`;
     }
-});
+}).catch(error => console.log(error));
 
 
 // GESTION DU PANIER

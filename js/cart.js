@@ -87,15 +87,18 @@ async function constructionDOM() {
                 })
             }
         }
-    });
+    })
+    .catch(error => console.log(error));
 }
 
 // Gestion du message d'erreur du formulaire avec les regex
 const checkField = (regex, field, error) => {
     if (regex.test(field)) {
         error.innerHTML = "";
+        return true;
     } else {
         error.innerHTML = "Données non conforme";
+        return false;
     }
 }
 
@@ -121,7 +124,7 @@ function order(contact) {
         } catch(e) {
             console.log(e);
         }
-    })
+    }).catch(error => console.log(error))
 }
 
 // Affichage total canapés
@@ -227,7 +230,13 @@ boutonSubmit.addEventListener("click", (event) => {
         email,
     };
     
-    // Si l'objet contact est rempli alors on peut l'utiliser
-    (firstName && lastName  && address  && city  && email && myLocalStorage) ? order(userContact): alert("Il vous faut choisir au moins un produit");
+    // Envoi de la commande après vérification du localStorage et formulaire
+    if (myLocalStorage) {
+        if (firstName && lastName  && address  && city  && email) {
+         order(userContact);
+        }    
+    } else {
+        alert("Il vous faut choisir au moins un produit");
+    }
     
 })
